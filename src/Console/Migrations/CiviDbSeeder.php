@@ -28,7 +28,7 @@ class CiviDbSeeder
         // Create (if requested) and seed tables.
         // TBD: Language-specific seeders (civicrm_data.en_US.mysql) should be used if present
         $conn = $this->civiConfig->connectionName();
-        $sqlSrc = ['civicrm_data.mysql', 'civicrm_acl.mysql'];
+        $sqlSrc = ['civicrm_data.mysql', 'civicrm_acl.mysql', 'civicrm_triggers.mysql'];
         if ($createTables) {
             array_unshift($sqlSrc, 'civicrm.mysql');
         }
