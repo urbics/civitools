@@ -1,0 +1,276 @@
+/*
+ Navicat MySQL Data Transfer
+
+ Source Server         : civicrm.urbics.com
+ Source Server Type    : MySQL
+ Source Server Version : 50720
+ Source Host           : localhost
+ Source Database       : civicrm
+
+ Target Server Type    : MySQL
+ Target Server Version : 50720
+ File Encoding         : utf-8
+
+ Date: 01/02/2018 12:36:50 PM
+*/
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+--  Function structure for `civicrm_strip_non_numeric`
+-- ----------------------------
+DROP FUNCTION IF EXISTS `civicrm_strip_non_numeric`;
+delimiter ;;
+CREATE DEFINER=`sysadmin`@`%` FUNCTION `civicrm_strip_non_numeric`(input VARCHAR(255) CHARACTER SET utf8) RETURNS varchar(255) CHARSET utf8
+    NO SQL
+    DETERMINISTIC
+BEGIN
+      DECLARE output   VARCHAR(255) CHARACTER SET utf8 DEFAULT '';
+      DECLARE iterator INT          DEFAULT 1;
+      WHILE iterator < (LENGTH(input) + 1) DO
+        IF SUBSTRING(input, iterator, 1) IN ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') THEN
+          SET output = CONCAT(output, SUBSTRING(input, iterator, 1));
+        END IF;
+        SET iterator = iterator + 1;
+      END WHILE;
+      RETURN output;
+    END
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Triggers structure for table civicrm_activity
+-- ----------------------------
+DROP TRIGGER IF EXISTS `civicrm_activity_before_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_activity_before_insert` BEFORE INSERT ON `civicrm_activity` FOR EACH ROW BEGIN  
+SET NEW.created_date = CURRENT_TIMESTAMP;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_activity_before_update`;
+delimiter ;;
+CREATE TRIGGER `civicrm_activity_before_update` BEFORE UPDATE ON `civicrm_activity` FOR EACH ROW BEGIN  
+UPDATE civicrm_case SET modified_date = CURRENT_TIMESTAMP WHERE id IN (SELECT ca.case_id FROM civicrm_case_activity ca WHERE ca.activity_id = OLD.id);
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_activity_before_delete`;
+delimiter ;;
+CREATE TRIGGER `civicrm_activity_before_delete` BEFORE DELETE ON `civicrm_activity` FOR EACH ROW BEGIN  
+UPDATE civicrm_case SET modified_date = CURRENT_TIMESTAMP WHERE id IN (SELECT ca.case_id FROM civicrm_case_activity ca WHERE ca.activity_id = OLD.id);
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_address
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_address_after_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_address_after_insert` AFTER INSERT ON `civicrm_address` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_address_after_update`;
+delimiter ;;
+CREATE TRIGGER `civicrm_address_after_update` AFTER UPDATE ON `civicrm_address` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_address_after_delete`;
+delimiter ;;
+CREATE TRIGGER `civicrm_address_after_delete` AFTER DELETE ON `civicrm_address` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = OLD.contact_id;
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_case
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_case_before_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_case_before_insert` BEFORE INSERT ON `civicrm_case` FOR EACH ROW BEGIN  
+SET NEW.created_date = CURRENT_TIMESTAMP;
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_case_activity
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_case_activity_after_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_case_activity_after_insert` AFTER INSERT ON `civicrm_case_activity` FOR EACH ROW BEGIN  
+UPDATE civicrm_case SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.case_id;
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_contact
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_contact_before_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_contact_before_insert` BEFORE INSERT ON `civicrm_contact` FOR EACH ROW BEGIN  
+SET NEW.created_date = CURRENT_TIMESTAMP;
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_email
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_email_after_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_email_after_insert` AFTER INSERT ON `civicrm_email` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_email_after_update`;
+delimiter ;;
+CREATE TRIGGER `civicrm_email_after_update` AFTER UPDATE ON `civicrm_email` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_email_after_delete`;
+delimiter ;;
+CREATE TRIGGER `civicrm_email_after_delete` AFTER DELETE ON `civicrm_email` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = OLD.contact_id;
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_im
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_im_after_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_im_after_insert` AFTER INSERT ON `civicrm_im` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_im_after_update`;
+delimiter ;;
+CREATE TRIGGER `civicrm_im_after_update` AFTER UPDATE ON `civicrm_im` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_im_after_delete`;
+delimiter ;;
+CREATE TRIGGER `civicrm_im_after_delete` AFTER DELETE ON `civicrm_im` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = OLD.contact_id;
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_mailing
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_mailing_before_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_mailing_before_insert` BEFORE INSERT ON `civicrm_mailing` FOR EACH ROW BEGIN  
+SET NEW.created_date = CURRENT_TIMESTAMP;
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_phone
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_phone_before_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_phone_before_insert` BEFORE INSERT ON `civicrm_phone` FOR EACH ROW BEGIN  
+SET NEW.phone_numeric = civicrm_strip_non_numeric(NEW.phone);
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_phone_after_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_phone_after_insert` AFTER INSERT ON `civicrm_phone` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_phone_before_update`;
+delimiter ;;
+CREATE TRIGGER `civicrm_phone_before_update` BEFORE UPDATE ON `civicrm_phone` FOR EACH ROW BEGIN  
+SET NEW.phone_numeric = civicrm_strip_non_numeric(NEW.phone);
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_phone_after_update`;
+delimiter ;;
+CREATE TRIGGER `civicrm_phone_after_update` AFTER UPDATE ON `civicrm_phone` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_phone_after_delete`;
+delimiter ;;
+CREATE TRIGGER `civicrm_phone_after_delete` AFTER DELETE ON `civicrm_phone` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = OLD.contact_id;
+ END
+ ;;
+delimiter ;
+
+delimiter ;;
+-- ----------------------------
+--  Triggers structure for table civicrm_website
+-- ----------------------------
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_website_after_insert`;
+delimiter ;;
+CREATE TRIGGER `civicrm_website_after_insert` AFTER INSERT ON `civicrm_website` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_website_after_update`;
+delimiter ;;
+CREATE TRIGGER `civicrm_website_after_update` AFTER UPDATE ON `civicrm_website` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = NEW.contact_id;
+ END
+ ;;
+delimiter ;
+DROP TRIGGER IF EXISTS `civicrm_website_after_delete`;
+delimiter ;;
+CREATE TRIGGER `civicrm_website_after_delete` AFTER DELETE ON `civicrm_website` FOR EACH ROW BEGIN  
+UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = OLD.contact_id;
+ END
+ ;;
+delimiter ;
+
+SET FOREIGN_KEY_CHECKS = 1;
