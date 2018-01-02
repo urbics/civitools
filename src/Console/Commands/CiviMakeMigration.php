@@ -8,6 +8,8 @@ use Illuminate\Filesystem\Filesystem;
 use Urbics\Civitools\Console\Migrations\SchemaParser;
 use Urbics\Civitools\Console\Migrations\SyntaxBuilder;
 use Urbics\Civitools\Traits\PackageNameTrait;
+use Urbics\Civitools\Console\Migrations\SqlFunctions;
+use Urbics\Civitools\Console\Migrations\SqlTriggers;
 
 /**
  * Based on laracasts/generators
@@ -23,6 +25,20 @@ class CiviMakeMigration extends Command
      * @var Filesystem
      */
     protected $files;
+
+    /**
+     * The SqlFunctions instance.
+     *
+     * @var SqlFunctions
+     */
+    protected $sqlFunctions;
+
+    /**
+     * The SqlTriggers instance.
+     *
+     * @var SqlTriggers
+     */
+    protected $qlTriggers;
 
     /**
      * The XML schema file name.
@@ -94,12 +110,17 @@ class CiviMakeMigration extends Command
      * Create a new command instance.
      *
      * @param Filesystem $files
+     * @param SqlFunctions $sqlFunctions
+     * @param SqlTriggers $sqlTriggers
+     * 
      * @return void
      */
-    public function __construct(Filesystem $files)
+    public function __construct(Filesystem $files, SqlFunctions $sqlFunctions, SqlTriggers $sqlTriggers)
     {
         parent::__construct();
         $this->files = $files;
+        $this->sqlFunctions = $sqlFunctions;
+        $this->sqlTriggers = $sqlTriggers;
 
         $this->composer = app()['composer'];
     }
@@ -131,6 +152,8 @@ class CiviMakeMigration extends Command
         $dom->documentURI = $this->xmlSource;
         $dom->xinclude();
         $this->schema = (new SchemaParser)->parse(simplexml_import_dom($dom));
+        $this->schema = array_merge($this->schema, $this->sqlFunctions->buildSchema());
+        $this->schema = array_merge($this->schema, $this->sqlTriggers->buildSchema());
     }
 
     /**
@@ -155,6 +178,18 @@ class CiviMakeMigration extends Command
         }
 
         $this->seederCleanup();
+
+        // Generate functions.
+        foreach ($this->schema['create_function'] as $table) {
+            $this->info("Processing functions for " . $table['name']);
+            $this->sqlFunction->buildSql($table, 'create');
+        }
+
+        // Generate triggers.
+        foreach ($this->schema['create_trigger'] as $table) {
+            $this->info("Processing triggers for " . $table['name']);
+            $this->sqlTriggers->buildSql($table, 'create');
+        }
 
         // Generate the foreign key migration classes.
         foreach ($this->schema['update'] as $table) {

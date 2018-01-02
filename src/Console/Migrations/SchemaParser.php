@@ -29,7 +29,7 @@ class SchemaParser
      */
     public function parse($xmlSchema)
     {
-        $this->schema = ['create' => [], 'add' => []];
+        $this->schema = ['create' => [], 'update' => [], 'create_function' => [], 'create_trigger' => []];
         foreach ($xmlSchema->tables as $tableGroup) {
             foreach ($tableGroup as $table) {
                 $name = $this->value('name', $table);
