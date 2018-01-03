@@ -17,7 +17,7 @@ class CiviMakeMigrationTest extends TestCase
      */
     public function testMigrationGeneratesCorrectNumberOfFiles()
     {
-        $targetFileCount = 304;
+        $targetFileCount = 305;
         $testDir = 'TempCiviTest';
         $filePath = database_path("migrations/$testDir");
 

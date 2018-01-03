@@ -152,7 +152,7 @@ class CiviMakeMigration extends Command
         $dom->documentURI = $this->xmlSource;
         $dom->xinclude();
         $this->schema = (new SchemaParser)->parse(simplexml_import_dom($dom));
-        $this->schema = array_merge($this->schema, $this->sqlFunctions->buildSchema());
+        $this->schema = array_merge_recursive($this->schema, $this->sqlFunctions->buildSchema());
         $this->schema = array_merge($this->schema, $this->sqlTriggers->buildSchema());
     }
 
@@ -182,7 +182,7 @@ class CiviMakeMigration extends Command
         // Generate functions.
         foreach ($this->schema['create_function'] as $table) {
             $this->info("Processing functions for " . $table['name']);
-            $this->sqlFunction->buildSql($table, 'create');
+            $this->makeMigration($table, 'create_function');
         }
 
         // Generate triggers.

@@ -37,10 +37,15 @@ class SyntaxBuilder
      */
     private function createSchemaForUpMethod($schema, $meta)
     {
-        $fields = $this->constructSchema($schema);
+        $schemaType = ($meta['action'] == 'create_function' ? 'Function ' : 'Column');
+        $fields = $this->constructSchema($schema, 'Add', $schemaType);
 
         if ($meta['action'] == 'create') {
             return $this->insert($fields)->into($this->getCreateSchemaWrapper());
+        }
+
+        if ($meta['action'] == 'create_function') {
+            return $this->insert($fields)->into($this->getCreateFunctionSchemaWrapper());
         }
 
         if ($meta['action'] == 'update') {
@@ -71,6 +76,12 @@ class SyntaxBuilder
         // method, we should drop it.
         if ($meta['action'] == 'create') {
             return sprintf("Schema::drop('%s');", $schema['name']);
+        }
+
+        // If the user created a function, then for the down
+        // method, we should drop it.
+        if ($meta['action'] == 'create_function') {
+            return sprintf("DB::raw('DROP FUNCTION IF EXISTS %s');", $schema['name']);
         }
 
         // If the user added columns to a table, then for
@@ -129,6 +140,16 @@ class SyntaxBuilder
     }
 
     /**
+     * Get the wrapper template for a "create_function" action.
+     *
+     * @return string
+     */
+    private function getCreateFunctionSchemaWrapper()
+    {
+        return file_get_contents(dirname(__DIR__) . '/Migrations/Stubs/schema-create-function.stub');
+    }
+
+    /**
      * Get the wrapper template for an "add" action.
      *
      * @return string
@@ -145,13 +166,13 @@ class SyntaxBuilder
      * @param  string $direction
      * @return array
      */
-    private function constructSchema($schema, $direction = 'Add')
+    private function constructSchema($schema, $direction = 'Add', $schemaType = 'Column')
     {
         if (!$schema) {
             return '';
         }
-        $fields = array_map(function ($field) use ($direction) {
-            $method = "{$direction}Column";
+        $fields = array_map(function ($field) use ($direction, $schemaType) {
+            $method = camel_case("{$direction}{$schemaType}");
 
             return $this->$method($field);
         }, $schema['fields']);
@@ -197,6 +218,17 @@ class SyntaxBuilder
         return $syntax .= ';';
     }
 
+    /**
+     * Construct the syntax to add a function.
+     *
+     * @param  string $field
+     * @return string
+     */
+    private function addFunction($field)
+    {
+        return "DB::raw('" . $field['sql'] . "');";
+
+    }
     /**
      * Construct the syntax to drop a column.
      *
