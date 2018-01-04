@@ -227,8 +227,19 @@ class SyntaxBuilder
     private function addFunction($field)
     {
         return "DB::raw('" . $field['sql'] . "');";
-
     }
+
+    /**
+     * Construct the syntax to add a trigger.
+     *
+     * @param  string $field
+     * @return string
+     */
+    private function addTrigger($field)
+    {
+        return "DB::raw('" . $field['sql'] . "');";
+    }
+
     /**
      * Construct the syntax to drop a column.
      *

@@ -153,7 +153,7 @@ class CiviMakeMigration extends Command
         $dom->xinclude();
         $this->schema = (new SchemaParser)->parse(simplexml_import_dom($dom));
         $this->schema = array_merge_recursive($this->schema, $this->sqlFunctions->buildSchema());
-        $this->schema = array_merge($this->schema, $this->sqlTriggers->buildSchema());
+        $this->schema = array_merge_recursive($this->schema, $this->sqlTriggers->buildSchema());
     }
 
     /**
@@ -188,7 +188,7 @@ class CiviMakeMigration extends Command
         // Generate triggers.
         foreach ($this->schema['create_trigger'] as $table) {
             $this->info("Processing triggers for " . $table['name']);
-            $this->sqlTriggers->buildSql($table, 'create');
+            $this->makeMigration($table, 'create_trigger');
         }
 
         // Generate the foreign key migration classes.
@@ -422,14 +422,16 @@ class CiviMakeMigration extends Command
 
     /**
      * Replace the class name in the stub.
-     *
+     * Example: create_function, civicrm_contact -> CreateFunctionCivicrmContact
+     * 
      * @param  string $stub
      * @param array $table
+     * @param string $action
      * @return $this
      */
     protected function replaceClassName(&$stub, $table, $action)
     {
-        $className = title_case($action) . ucwords(camel_case($table['name']));
+        $className = title_case(studly_case($action)) . ucwords(camel_case($table['name']));
         $stub = str_replace('{{class}}', $className, $stub);
 
         return $this;

@@ -10,13 +10,13 @@ class SqlFunctions
      */
     public function buildSchema()
     {
-        $tables['create_function'] = [
-            'civicrm_contact' => [
-                'name' => 'civicrm_contact',
-                'fields' => [
-                  'civicrm_strip_non_numeric' => [
-                    'name' => 'civicrm_strip_non_numeric',
-                    'sql' => "
+      $tables['create_function'] = [
+          'civicrm_contact' => [
+              'name' => 'civicrm_contact',
+              'fields' => [
+                'civicrm_strip_non_numeric' => [
+                  'name' => 'civicrm_strip_non_numeric',
+                  'sql' => "
                     DELIMITER=;;
                     CREATE FUNCTION civicrm_strip_non_numeric(input VARCHAR(255) CHARACTER SET utf8)
                       RETURNS VARCHAR(255) CHARACTER SET utf8
@@ -33,11 +33,12 @@ class SqlFunctions
                       END WHILE;
                       RETURN output;
                     END;;
-                    DELIMITER=;",
-                  ]
+                    DELIMITER=;
+                  ",
                 ]
-            ]
-        ];
+              ]
+          ]
+      ];
           
       return $tables;
   }
