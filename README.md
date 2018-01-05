@@ -10,7 +10,7 @@ composer require urbics/civitools
 Or manually modify `composer.json`:
 ``` json
 "require": {
-    "urbics/civitools": "~1.*"
+    "urbics/civitools": "~0.1"
 }
 ```
 
