@@ -17,7 +17,7 @@ class CiviMakeMigrationTest extends TestCase
      */
     public function testMigrationGeneratesCorrectNumberOfFiles()
     {
-        $targetFileCount = 305;
+        $targetFileCount = 315;
         $testDir = 'TempCiviTest';
         $filePath = database_path("migrations/$testDir");
         $seederPath = database_path("seeds/$testDir");
@@ -52,7 +52,7 @@ class CiviMakeMigrationTest extends TestCase
 
         // CiviCRM currently (late 2017) has 152 tables.
         // Migration generates a table and a foreign key migration for each table,
-        //  plus 1 function plus XX triggers, so 305 files should exist in the migration folder.
+        //  plus 1 function plus 10 triggers, so 315 files should exist in the migration folder.
         $this->assertEquals($targetFileCount, $fileCount);
     }
 

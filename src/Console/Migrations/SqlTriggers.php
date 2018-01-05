@@ -10,9 +10,192 @@ class SqlTriggers
      */
     public function buildSchema()
     {
-        $items = [];
-        
-        return $items;
+        $schema = [
+          'civicrm_activity' => [
+            'before' => [
+              'insert' => [
+                'set' => 'NEW.created_date = CURRENT_TIMESTAMP',
+              ],
+              'update' => [
+                'update' => 'civicrm_case',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id IN (SELECT ca.case_id FROM civicrm_case_activity ca WHERE ca.activity_id = OLD.id)',
+              ],
+              'delete' => [
+                'update' => 'civicrm_case',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id IN (SELECT ca.case_id FROM civicrm_case_activity ca WHERE ca.activity_id = OLD.id)',
+              ],
+            ],
+          ],
+          'civicrm_address' => [
+            'after' => [
+              'insert' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'update' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'delete' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = OLD.contact_id',
+              ],
+            ],
+          ],
+          'civicrm_case' => [
+            'before' => [
+              'insert' => [
+                'set' => 'NEW.created_date = CURRENT_TIMESTAMP',
+              ],
+            ],
+          ],
+          'civicrm_case_activity' => [
+            'after' => [
+              'insert' => [
+                'update' => 'civicrm_case',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.case_id',
+              ],
+            ],
+          ],
+          'civicrm_contact' => [
+            'before' => [
+              'insert' => [
+                'set' => 'NEW.created_date = CURRENT_TIMESTAMP',
+              ],
+            ],
+          ],
+          'civicrm_email' => [
+            'after' => [
+              'insert' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'update' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'delete' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = OLD.contact_id',
+              ],
+            ],
+          ],
+          'civicrm_im' => [
+            'after' => [
+              'insert' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'update' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'delete' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = OLD.contact_id',
+              ],
+            ],
+          ],
+          'civicrm_mailing' => [
+            'before' => [
+              'insert' => [
+                'set' => 'NEW.created_date = CURRENT_TIMESTAMP',
+              ],
+            ],
+          ],
+          'civicrm_phone' => [
+            'before' => [
+              'insert' => [
+                'set' => 'NEW.phone_numeric = civicrm_strip_non_numeric(NEW.phone)',
+              ],
+              'update' => [
+                'set' => 'NEW.phone_numeric = civicrm_strip_non_numeric(NEW.phone)',
+              ],
+            ],
+            'after' => [
+              'insert' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'update' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'delete' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = OLD.contact_id',
+              ],
+            ],
+          ],
+          'civicrm_website' => [
+            'after' => [
+              'insert' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'update' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = NEW.contact_id',
+              ],
+              'delete' => [
+                'update' => 'civicrm_contact',
+                'set' => 'modified_date = CURRENT_TIMESTAMP',
+                'where' => 'id = OLD.contact_id',
+              ],
+            ],
+          ],
+        ];
+
+        $tables['create_trigger'] = [];
+        foreach ($schema as $table => $item) {
+            if (!array_get($tables, "create_trigger.{$table}")) {
+                $tables['create_trigger'][$table] = ['name' => $table, 'fields' => []];
+            }
+            foreach ($item as $when => $values) {
+                foreach ($values as $event => $value) {
+                    $lineSpacer = "\n" . str_repeat(' ', 12);
+                    $indent = str_repeat(' ', 4);
+                    $triggerName = "{$table}_{$when}_{$event}" . (isset($value['update']) ? '_update_' . $value['update'] : '');
+                    $upTrigger = "{$lineSpacer}DELIMITER ;;{$lineSpacer}"
+                        . "CREATE TRIGGER {$triggerName} " . strtoupper($when) . " " . strtoupper($event)
+                        . " ON {$table} FOR EACH ROW{$lineSpacer}BEGIN{$lineSpacer}{$indent}";
+                    if (isset($value['update'])) {
+                        $upTrigger .= "UPDATE " . $value['update'] . " SET " . $value['set'];
+                        $upTrigger .= (isset($value['where']) ? " WHERE " . $value['where'] : '') . ';';
+                    } else {
+                        $upTrigger .= "SET " . $value['set'] . ';';
+                    }
+                    $upTrigger .= "{$lineSpacer}END;;{$lineSpacer}DELIMITER ;{$lineSpacer}";
+                    $downTrigger = "DROP TRIGGER IF EXISTS {$triggerName};";
+                    $tables['create_trigger'][$table]['fields'][$triggerName] = [
+                      'name' => $triggerName,
+                      'when' => $when,
+                      'event' => $event,
+                      'sql_up' => $upTrigger,
+                      'sql_down' => $downTrigger,
+                    ];
+                }
+            }
+        }
+
+        return $tables;
     }
 
     /**

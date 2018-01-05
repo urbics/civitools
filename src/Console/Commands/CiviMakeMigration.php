@@ -431,7 +431,7 @@ class CiviMakeMigration extends Command
      */
     protected function replaceClassName(&$stub, $table, $action)
     {
-        $className = title_case(studly_case($action)) . ucwords(camel_case($table['name']));
+        $className = studly_case($action . '_' . $table['name']);
         $stub = str_replace('{{class}}', $className, $stub);
 
         return $this;

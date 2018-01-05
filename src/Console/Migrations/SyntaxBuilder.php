@@ -37,15 +37,20 @@ class SyntaxBuilder
      */
     private function createSchemaForUpMethod($schema, $meta)
     {
-        $schemaType = ($meta['action'] == 'create_function' ? 'Function ' : 'Column');
-        $fields = $this->constructSchema($schema, 'Add', $schemaType);
+        $action = explode('_', $meta['action']);
+        $schemaType = (empty($action[1]) ? 'Column' : title_case($action[1]));
 
+        $fields = $this->constructSchema($schema, 'Add', $schemaType);
         if ($meta['action'] == 'create') {
             return $this->insert($fields)->into($this->getCreateSchemaWrapper());
         }
 
         if ($meta['action'] == 'create_function') {
             return $this->insert($fields)->into($this->getCreateFunctionSchemaWrapper());
+        }
+
+        if ($meta['action'] == 'create_trigger') {
+            return $this->insert($fields)->into($this->getCreateTriggerSchemaWrapper());
         }
 
         if ($meta['action'] == 'update') {
@@ -81,7 +86,15 @@ class SyntaxBuilder
         // If the user created a function, then for the down
         // method, we should drop it.
         if ($meta['action'] == 'create_function') {
-            return sprintf("DB::raw('DROP FUNCTION IF EXISTS %s');", $schema['name']);
+            $fields = $this->constructSchema($schema, 'Drop', 'Function');
+            return $this->insert($fields)->into($this->getDropFunctionSchemaWrapper(), 'schema_down');
+        }
+
+        // If the user created a trigger, then for the down
+        // method, we should drop it.
+        if ($meta['action'] == 'create_trigger') {
+            $fields = $this->constructSchema($schema, 'Drop', 'Trigger');
+            return $this->insert($fields)->into($this->getDropTriggerSchemaWrapper(), 'schema_down');
         }
 
         // If the user added columns to a table, then for
@@ -147,6 +160,36 @@ class SyntaxBuilder
     private function getCreateFunctionSchemaWrapper()
     {
         return file_get_contents(dirname(__DIR__) . '/Migrations/Stubs/schema-create-function.stub');
+    }
+
+    /**
+     * Get the wrapper template for a "create_function" drop action.
+     *
+     * @return string
+     */
+    private function getDropFunctionSchemaWrapper()
+    {
+        return file_get_contents(dirname(__DIR__) . '/Migrations/Stubs/schema-drop-function.stub');
+    }
+
+    /**
+     * Get the wrapper template for a "create_trigger" action.
+     *
+     * @return string
+     */
+    private function getCreateTriggerSchemaWrapper()
+    {
+        return file_get_contents(dirname(__DIR__) . '/Migrations/Stubs/schema-create-trigger.stub');
+    }
+
+    /**
+     * Get the wrapper template for a "drop_trigger" action.
+     *
+     * @return string
+     */
+    private function getDropTriggerSchemaWrapper()
+    {
+        return file_get_contents(dirname(__DIR__) . '/Migrations/Stubs/schema-drop-trigger.stub');
     }
 
     /**
@@ -226,7 +269,18 @@ class SyntaxBuilder
      */
     private function addFunction($field)
     {
-        return "DB::raw('" . $field['sql'] . "');";
+        return "DB::raw('" . $field['sql_up'] . "');\n";
+    }
+
+    /**
+     * Construct the syntax to drop a function.
+     *
+     * @param  string $field
+     * @return string
+     */
+    private function dropFunction($field)
+    {
+        return "DB::raw('" . $field['sql_down'] . "');";
     }
 
     /**
@@ -237,7 +291,18 @@ class SyntaxBuilder
      */
     private function addTrigger($field)
     {
-        return "DB::raw('" . $field['sql'] . "');";
+        return "DB::raw('" . $field['sql_up'] . "');\n";
+    }
+
+    /**
+     * Construct the syntax to drop a trigger.
+     *
+     * @param  string $field
+     * @return string
+     */
+    private function dropTrigger($field)
+    {
+        return "DB::raw('" . $field['sql_down'] . "');";
     }
 
     /**
