@@ -173,7 +173,7 @@ class SqlTriggers
                     $lineSpacer = "\n" . str_repeat(' ', 12);
                     $indent = str_repeat(' ', 4);
                     $triggerName = "{$table}_{$when}_{$event}" . (isset($value['update']) ? '_update_' . $value['update'] : '');
-                    $upTrigger = "{$lineSpacer}DELIMITER ;;{$lineSpacer}"
+                    $upTrigger = "{$lineSpacer}"
                         . "CREATE TRIGGER {$triggerName} " . strtoupper($when) . " " . strtoupper($event)
                         . " ON {$table} FOR EACH ROW{$lineSpacer}BEGIN{$lineSpacer}{$indent}";
                     if (isset($value['update'])) {
@@ -182,7 +182,7 @@ class SqlTriggers
                     } else {
                         $upTrigger .= "SET " . $value['set'] . ';';
                     }
-                    $upTrigger .= "{$lineSpacer}END;;{$lineSpacer}DELIMITER ;{$lineSpacer}";
+                    $upTrigger .= "{$lineSpacer}END{$lineSpacer}";
                     $downTrigger = "DROP TRIGGER IF EXISTS {$triggerName};";
                     $tables['create_trigger'][$table]['fields'][$triggerName] = [
                       'name' => $triggerName,

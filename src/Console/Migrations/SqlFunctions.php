@@ -17,7 +17,6 @@ class SqlFunctions
                 'civicrm_strip_non_numeric' => [
                   'name' => 'civicrm_strip_non_numeric',
                   'sql_up' => "
-                    DELIMITER=;;
                     CREATE FUNCTION civicrm_strip_non_numeric(input VARCHAR(255) CHARACTER SET utf8)
                       RETURNS VARCHAR(255) CHARACTER SET utf8
                       DETERMINISTIC
@@ -32,8 +31,7 @@ class SqlFunctions
                         SET iterator = iterator + 1;
                       END WHILE;
                       RETURN output;
-                    END;;
-                    DELIMITER=;
+                    END;
                   ",
                   'sql_down' =>  "DROP FUNCTION IF EXISTS civicrm_strip_non_numeric;",
                 ]
