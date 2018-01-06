@@ -18,9 +18,10 @@ and `composer install`.
 
 ## Tools
 
- - Run civi:make:db to create a new civicrm database directly, using CiviCRM's civicrm.msql script.
- - Run civi:make:migration to generate migration files, optionally with seeder and model classes.  
+ - `civi:make:db` to create a new civicrm database directly, using CiviCRM's civicrm.msql script.
+ - `civi:make:migration` to generate migration files, optionally with seeder and model classes.  
  - Build the tables using Laravel's migration: `php artisan migrate --database=civicrm --path=database/migrations/civi --seed` (These are the default settings - change database connection and path as needed)
+ - `civi:db:backup` to back up or restore the civicrm database.  Be sure to set CIVI_DB_CONNECTION, CIVI_DB_DATABASE, CIVI_DB_HOST, CIVI_DB_USERNAME and CIVI_DB_PASSWORD in your .env file if any of the civicrm database settings are different from the default settings for your project.
 
 ## Limitations and cautions
 This is the same package as urbics/laracivi with the civi api functionality and the civicrm-core and civicrm-packages removed.  It is intended for projects that need direct access to a CiviCRM, but have dependency version conflicts with the civicrm-core package.
