@@ -62,7 +62,8 @@ class SyntaxBuilder
         $schemaType = (empty($action[1]) ? 'Column' : title_case($action[1]));
         $fields = $this->constructSchema($schema, 'Drop', $schemaType);
         if (in_array($meta['action'], ['create_function', 'create_trigger', 'update', 'remove'])) {
-            return $this->insert($fields)->into($this->getSchemaWrapper($meta['action']), 'schema_down');
+            $method = str_replace('create', 'drop', $meta['action']);
+            return $this->insert($fields)->into($this->getSchemaWrapper($method), 'schema_down');
         }
 
         // If the user created a table, then for the down
