@@ -53,11 +53,11 @@ class DbConfig
         if (!config("database.connections.{$this->connectName}")) {
             config(["database.connections.{$this->connectName}" => [
                 'driver'    => 'mysql',
-                'host'      => env('CIVI_DB_HOST', 'DB_HOST'),
-                'database'  => env('CIVI_DB_DATABASE', 'DB_DATABASE'),
-                'username'  => env('CIVI_DB_USERNAME', 'DB_USERNAME'),
-                'password'  => env('CIVI_DB_PASSWORD', 'DB_PASSWORD'),
-                'port'      => env('CIVI_DB_PORT', 'DB_PORT'),
+                'host'      => env('CIVI_DB_HOST', '127.0.0.1'),
+                'database'  => env('CIVI_DB_DATABASE', 'civicrm'),
+                'username'  => env('CIVI_DB_USERNAME', 'homestead'),
+                'password'  => env('CIVI_DB_PASSWORD', 'secret'),
+                'port'      => env('CIVI_DB_PORT', '3306'),
                 'charset'   => 'utf8',
                 'collation' => 'utf8_unicode_ci',
                 'prefix'    => '',
