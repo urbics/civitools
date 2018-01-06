@@ -29,11 +29,11 @@ class SchemaParser
      */
     public function parse($xmlSchema)
     {
-        $this->schema = ['create' => [], 'update' => [], 'create_function' => [], 'create_trigger' => []];
+        $this->schema = ['create_table' => [], 'create_update' => [], 'create_function' => [], 'create_trigger' => []];
         foreach ($xmlSchema->tables as $tableGroup) {
             foreach ($tableGroup as $table) {
                 $name = $this->value('name', $table);
-                $this->schema['create'][$name] = [
+                $this->schema['create_table'][$name] = [
                     'name' => $name,
                     'type' => 'table',
                     'drop' => $this->value('drop', $table),
@@ -42,11 +42,11 @@ class SchemaParser
                     'options' => ["comment('" . addcslashes(($this->value('comment', $table) ?: ''), "\\'") . "')"],
                     ''
                 ];
-                $this->schema['update'][$name] = $this->schema['create'][$name];
+                $this->schema['create_update'][$name] = $this->schema['create_table'][$name];
                 $fields = $this->getFields($table);
                 $indices = $this->getIndices($table);
-                $this->schema['create'][$name]['fields'] = array_merge($fields, $indices);
-                $this->schema['update'][$name]['fields'] = $this->getForeignKeys($table);
+                $this->schema['create_table'][$name]['fields'] = array_merge($fields, $indices);
+                $this->schema['create_update'][$name]['fields'] = $this->getForeignKeys($table);
             }
         }
         return $this->schema;

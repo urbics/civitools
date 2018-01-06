@@ -37,10 +37,8 @@ class SyntaxBuilder
      */
     private function createSchemaForUpMethod($schema, $meta)
     {
-        $action = explode('_', $meta['action']);
-        $schemaType = (empty($action[1]) ? 'Column' : title_case($action[1]));
-        $fields = $this->constructSchema($schema, ($action == 'remove' ? 'Drop' : 'Add'), $schemaType);
-        if (in_array($meta['action'], ['create', 'create_function', 'create_trigger', 'update', 'remove'])) {
+        $fields = $this->constructSchema($schema, 'Add', $meta['action']);
+        if (in_array($meta['action'], ['create_table', 'create_function', 'create_trigger', 'create_update'])) {
             return $this->insert($fields)->into($this->getSchemaWrapper($meta['action']), 'schema_up');
         }
 
@@ -58,18 +56,14 @@ class SyntaxBuilder
      */
     private function createSchemaForDownMethod($schema, $meta)
     {
-        $action = explode('_', $meta['action']);
-        $schemaType = (empty($action[1]) ? 'Column' : title_case($action[1]));
-        $fields = $this->constructSchema($schema, 'Drop', $schemaType);
-        if (in_array($meta['action'], ['create_function', 'create_trigger', 'update', 'remove'])) {
-            $method = str_replace('create', 'drop', $meta['action']);
-            return $this->insert($fields)->into($this->getSchemaWrapper($method), 'schema_down');
+        if (in_array($meta['action'], ['create_function', 'create_trigger', 'create_update'])) {
+            $fields = $this->constructSchema($schema, 'Drop', $meta['action']);
+            $action = str_replace('create', 'drop', $meta['action']);
+            return $this->insert($fields)->into($this->getSchemaWrapper($action), 'schema_down');
         }
 
-        // If the user created a table, then for the down
-        // method, we should drop it.
-        if ($meta['action'] == 'create') {
-            return sprintf("Schema::drop('%s');", $schema['name']);
+        if ($meta['action'] == 'create_table') {
+            return sprintf("Schema::dropIfExists('%s');", $schema['name']);
         }
 
         // Otherwise, we have no idea how to proceed.
@@ -112,13 +106,17 @@ class SyntaxBuilder
      *
      * @param  array $schema
      * @param  string $direction
+     * @param string $action
      * @return array
      */
-    private function constructSchema($schema, $direction = 'Add', $schemaType = 'Column')
+    private function constructSchema($schema, $direction, $action)
     {
         if (!$schema) {
             return '';
         }
+        $type = explode('_', $action);
+        $schemaType = (in_array($type[1], ['table', 'update']) ? 'Column' : 'Raw');
+
         $fields = array_map(function ($field) use ($direction, $schemaType) {
             $method = camel_case("{$direction}{$schemaType}");
 
@@ -167,50 +165,6 @@ class SyntaxBuilder
     }
 
     /**
-     * Construct the syntax to add a function.
-     *
-     * @param  string $field
-     * @return string
-     */
-    private function addFunction($field)
-    {
-        return "DB::unprepared(\"" . $field['sql_up'] . "\");\n";
-    }
-
-    /**
-     * Construct the syntax to drop a function.
-     *
-     * @param  string $field
-     * @return string
-     */
-    private function dropFunction($field)
-    {
-        return "DB::unprepared(\"" . $field['sql_down'] . "\");";
-    }
-
-    /**
-     * Construct the syntax to add a trigger.
-     *
-     * @param  string $field
-     * @return string
-     */
-    private function addTrigger($field)
-    {
-        return "DB::unprepared(\"" . $field['sql_up'] . "\");\n";
-    }
-
-    /**
-     * Construct the syntax to drop a trigger.
-     *
-     * @param  string $field
-     * @return string
-     */
-    private function dropTrigger($field)
-    {
-        return "DB::unprepared(\"" . $field['sql_down'] . "\");";
-    }
-
-    /**
      * Construct the syntax to drop a column.
      *
      * @param  string $field
@@ -222,5 +176,38 @@ class SyntaxBuilder
             return sprintf("\$table->drop%s('%s');", title_case($field['type']), $field['name']);
         }
         return sprintf("\$table->dropColumn('%s');", $field['name']);
+    }
+
+    /**
+     * Construct the syntax to drop a table.
+     *
+     * @param  string $table
+     * @return string
+     */
+    private function dropTable($table)
+    {
+        return $table;
+    }
+
+    /**
+     * Construct the syntax to add raw sql.
+     *
+     * @param  string $field
+     * @return string
+     */
+    private function addRaw($field)
+    {
+        return "DB::unprepared(\"" . $field['sql_up'] . "\");\n";
+    }
+
+    /**
+     * Construct the syntax to drop raw sql.
+     *
+     * @param  string $field
+     * @return string
+     */
+    private function dropRaw($field)
+    {
+        return "DB::unprepared(\"" . $field['sql_down'] . "\");";
     }
 }

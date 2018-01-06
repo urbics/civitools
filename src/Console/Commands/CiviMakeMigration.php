@@ -167,12 +167,12 @@ class CiviMakeMigration extends Command
         $this->seederSetup();
 
         // Run the table and index migrations and the model and seeder for each table.
-        foreach ($this->schema['create'] as $table) {
+        foreach ($this->schema['create_table'] as $table) {
             if (!empty($table['drop'])) {
                 continue;
             }
             $this->info("Processing " . $table['name']);
-            $this->makeMigration($table, 'create');
+            $this->makeMigration($table, 'create_table');
             $this->makeModel($table);
             $this->makeSeeder($table);
         }
@@ -192,12 +192,12 @@ class CiviMakeMigration extends Command
         }
 
         // Generate the foreign key migration classes.
-        foreach ($this->schema['update'] as $table) {
+        foreach ($this->schema['create_update'] as $table) {
             if (!empty($table['drop'])) {
                 continue;
             }
             $this->info("Processing foreign keys for " . $table['name']);
-            $this->makeMigration($table, 'update');
+            $this->makeMigration($table, 'create_update');
         }
 
         $this->info("Running composer dumpautoloads");
@@ -443,7 +443,7 @@ class CiviMakeMigration extends Command
      * @param  string $stub
      * @return $this
      */
-    protected function replaceSchema(&$stub, $table, $action = 'create')
+    protected function replaceSchema(&$stub, $table, $action)
     {
         $schema = (new SyntaxBuilder)->create($table, ['action' => $action]);
 

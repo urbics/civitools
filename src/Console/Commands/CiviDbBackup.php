@@ -72,8 +72,8 @@ class CiviDbBackup extends Command
         $config = $this->dbConfig->getConnection();
 
         $cmd = "mysqldump -u" . $config['username'] . " -p" . $config['password'] . " -h" . $config['host']
-            . " --no-create-db --no-create-info --log-error=$errorLog " . $config['database']
-            . " > " . $path . '/current_' . $config['database'] . "_db.sql";
+            . " --no-create-db --no-create-info --skip-triggers --complete-insert --log-error=$errorLog " 
+            . $config['database'] . " > " . $path . '/current_' . $config['database'] . "_db.sql";
         try {
             exec($cmd);
         } catch (Exception $e) {
