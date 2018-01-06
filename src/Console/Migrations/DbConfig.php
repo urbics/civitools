@@ -16,7 +16,7 @@ class DbConfig
     public function __construct(Repository $config)
     {
         $this->config = $config;
-        $this->connectName = env('CIVI_DB_CONNECTION');
+        $this->connectName = env('CIVI_DB_CONNECTION', 'civicrm');
         $this->setConnection();
     }
 
@@ -53,11 +53,11 @@ class DbConfig
         if (!config("database.connections.{$this->connectName}")) {
             config(["database.connections.{$this->connectName}" => [
                 'driver'    => 'mysql',
-                'host'      => env('CIVI_DB_HOST'),
-                'database'  => env('CIVI_DB_DATABASE'),
-                'username'  => env('CIVI_DB_USERNAME'),
-                'password'  => env('CIVI_DB_PASSWORD'),
-                'port'      => env('CIVI_DB_PORT'),
+                'host'      => env('CIVI_DB_HOST', 'DB_HOST'),
+                'database'  => env('CIVI_DB_DATABASE', 'DB_DATABASE'),
+                'username'  => env('CIVI_DB_USERNAME', 'DB_USERNAME'),
+                'password'  => env('CIVI_DB_PASSWORD', 'DB_PASSWORD'),
+                'port'      => env('CIVI_DB_PORT', 'DB_PORT'),
                 'charset'   => 'utf8',
                 'collation' => 'utf8_unicode_ci',
                 'prefix'    => '',
