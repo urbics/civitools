@@ -161,6 +161,11 @@ class SchemaParser
             $fields = '';
             foreach ($values->fieldName as $key => $fieldName) {
                 $fields .= ($fields ? ', ' : '[');
+                if (((string)$fieldName['length'])) {
+                    // Workaround from https://github.com/laravel/framework/issues/9293
+                    $fields .= "DB::raw('" . (string) $fieldName . "(" . (string) $fieldName['length'] . ")')";
+                    continue;
+                }
                 $fields .= "'" . (string) $fieldName . "'";
             }
             if ($fields) {
