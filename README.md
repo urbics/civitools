@@ -21,8 +21,8 @@ Installer adds CIVI_DB_XXX settings to the .env file that should be reviewed to 
 ## Tools
 
  - `civi:make:db` to create db and build tables using CiviCRM's civicrm.msql script.
- - `civi:make:migration` to generate Laravel migration files, optionally with seeder and model classes.  
- - Build the tables using Laravel's migration: `php artisan migrate --database=civicrm --path=database/migrations/civi --seed` (These are the default settings - change database connection and path as needed)
+ - `civi:make:migration` to generate Laravel migration files, optionally with seeder and model classes.  Note: you may need to increase the file limit above 256.  On Mac OS: `ulimit -n 1024`.
+ - Build the tables using Laravel's migration: `php artisan migrate --database=civicrm --path=database/migrations/civi --seed` (These are the default settings - change database connection and path as needed).
  - `civi:db:backup` to back up or restore the civicrm database.  Be sure to set CIVI_DB_CONNECTION, CIVI_DB_DATABASE, CIVI_DB_HOST, CIVI_DB_USERNAME and CIVI_DB_PASSWORD in your .env file if any of the civicrm database settings are different from the default settings for your project.
 
 ## Limitations and cautions
