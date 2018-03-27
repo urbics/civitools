@@ -15,6 +15,7 @@ Or manually modify `composer.json`:
 ```
 
 and `composer install`.
+Installer adds CIVI_DB_XXX settings to the .env file that should be reviewed to match your setup.  The tools use these settings to connect to the database.
 
 ## Tools
 
